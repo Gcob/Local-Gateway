@@ -5,14 +5,14 @@ and **Portainer** for simplified container management.
 
 ---
 
-## ⚡ Quick Overview
+## Quick Overview
 
 This setup provides:
 
 1. **Traefik (Reverse Proxy)** – Routes web traffic to your containers.
 
     * **HTTP Access:** Port `80`
-    * **Dashboard:** Port `8080` (accessible via `http://traefik.localhost` or the direct port)
+    * **Dashboard:** Port `8080` (accessible via `http://localhost:8080` only)
 
 2. **Portainer (Docker Management UI)** – A web interface to manage containers, images, and volumes.
 
@@ -22,7 +22,7 @@ This setup provides:
 
 ---
 
-## ⚙️ Quick Start
+## Quick Start
 
 ### 1. Create the Shared Network
 
@@ -50,7 +50,7 @@ Once running, you can access both admin interfaces via proxy or direct ports:
 
 | Service                 | Via Proxy                                                | Via Direct Port                                                                                          |
 | ----------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| **Traefik Dashboard**   | [http://traefik.localhost](http://traefik.localhost)     | [http://localhost:8080](http://localhost:8080)                                                           |
+| **Traefik Dashboard**   | *(Not available via traefik.localhost)*                  | [http://localhost:8080](http://localhost:8080)                                                           |
 | **Portainer Dashboard** | [http://portainer.localhost](http://portainer.localhost) | [http://localhost:9000](http://localhost:9000) *(you’ll need to create an admin account the first time)* |
 
 ---
@@ -60,7 +60,7 @@ Once running, you can access both admin interfaces via proxy or direct ports:
 To make a new project accessible through Traefik (e.g. `myapp.localhost`):
 
 1. Add the external network `webproxy` to your project’s `docker-compose.yml`.
-2. Add **Traefik labels** to your service.
+2. Add **Traefik labels** to your service for your own app (not for the Traefik dashboard).
 
 **Example service (inside your project’s `docker-compose.yml`):**
 
@@ -84,4 +84,6 @@ networks:
 ```
 
 Then access your app at:
-👉 `http://myapp.localhost`
+`http://myapp.localhost`
+
+*Note: The Traefik dashboard is only available at [http://localhost:8080](http://localhost:8080). Access via `traefik.localhost` is no longer supported.*
