@@ -83,7 +83,67 @@ networks:
     external: true
 ```
 
-Then access your app at:
-`http://myapp.localhost`
+
+## Local Development — Add Domains to Your Hosts File
+
+To make your custom local domains (like `myapp.localhost`, `traefik.localhost`, `portainer.localhost`) work,
+you need to **map them to `127.0.0.1`** in your system’s hosts file.
+
+### Add the following lines:
+
+```
+127.0.0.1   traefik.localhost
+127.0.0.1   portainer.localhost
+127.0.0.1   myapp.localhost
+```
+
+You can add more entries for any project you expose through Traefik.
+
+---
+
+### On Linux, WSL and MacOS
+
+Edit the hosts file using your preferred editor (with sudo):
+
+```bash
+sudo nano /etc/hosts
+```
+
+Then paste the lines above and save (`CTRL+O`, `ENTER`, `CTRL+X`).
+
+---
+
+### On Windows
+
+Edit the file located at:
+
+```
+C:\Windows\System32\drivers\etc\hosts
+```
+
+Open Notepad as **Administrator**, then:
+
+1. Go to **File → Open**
+2. Navigate to the path above
+3. Select “All Files (*.*)” to see `hosts`
+4. Add the same lines and save the file
+
+Flush the DNS cache (optional but recommended):
+
+```powershell
+ipconfig /flushdns
+```
+
+---
+
+### ✅ Test
+
+After saving, open your browser and check:
+
+* [http://traefik.localhost](http://traefik.localhost)
+* [http://portainer.localhost](http://portainer.localhost)
+* [http://myapp.localhost](http://myapp.localhost)
+
+If they load successfully, your local DNS routing is working 🎉
 
 *Note: The Traefik dashboard is only available at [http://localhost:8080](http://localhost:8080). Access via `traefik.localhost` is no longer supported.*
