@@ -75,6 +75,8 @@ services:
       - "traefik.http.routers.myapp.rule=Host(`myapp.localhost`)"
       # The internal port your app listens on (e.g. 80, 3000, 5000)
       - "traefik.http.services.myapp.loadbalancer.server.port=80"
+      # To avoid conflicts with other networks, you must specify the network 
+      - "traefik.docker.network=webproxy"
     networks:
       - webproxy # VERY IMPORTANT!
 
