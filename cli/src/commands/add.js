@@ -94,4 +94,5 @@ export const addCommand = new Command('add')
     }
 
     console.log(`\nService '${service}' is now routed to http://${domain}`);
+    console.log(`\nTo apply the changes:\n  docker compose up -d ${service}`);
   });

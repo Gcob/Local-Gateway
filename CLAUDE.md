@@ -110,7 +110,9 @@ The `lgw` binary lives in `cli/`. It is a Node.js ESM project (Node >=20).
 **`lgw add`** — interactive when run in a terminal, flag-only when no TTY (CI/CD safe).
 After interactive prompts it prints the equivalent non-interactive command.
 
-**`lgw list`** — queries the Traefik API (default: `http://127.0.0.1:8000`).
+**`lgw list`** — queries the Traefik API (default: `http://127.0.0.1:8000`) and cross-references
+running containers via `docker inspect` to resolve compose file paths.
+Columns: SERVICE, URL (with `http://` or `https://` schema), SOURCE (path to compose file).
 Respects `TRAEFIK_PORT_DASHBOARD` env var. Only works when the gateway is running.
 
 **Setup:** `cd cli && npm install && npm link`
