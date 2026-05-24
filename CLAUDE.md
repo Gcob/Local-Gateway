@@ -104,6 +104,7 @@ The `lgw` binary lives in `cli/`. It is a Node.js ESM project (Node >=20).
 | `cli/bin/lgw.js`              | Entry point — registers all commands      |
 | `cli/src/commands/add.js`     | `lgw add` — patches a project's compose   |
 | `cli/src/commands/list.js`    | `lgw list` — shows active Traefik routes  |
+| `cli/src/commands/info.js`    | `lgw info` — shows routing details for the current project |
 | `cli/src/utils/compose.js`    | YAML read/write helpers                   |
 | `cli/src/utils/hosts.js`      | `/etc/hosts` idempotent entry helper      |
 
@@ -112,8 +113,12 @@ After interactive prompts it prints the equivalent non-interactive command.
 
 **`lgw list`** — queries the Traefik API (default: `http://127.0.0.1:8000`) and cross-references
 running containers via `docker inspect` to resolve compose file paths.
-Columns: SERVICE, URL (with `http://` or `https://` schema), SOURCE (path to compose file).
+Columns: SERVICE, URL (with `http://` or `https://` scheme), SOURCE (path to compose file).
 Respects `TRAEFIK_PORT_DASHBOARD` env var. Only works when the gateway is running.
+
+**`lgw info`** — reads `docker-compose.yml` in the current directory and shows routing details
+for all services that have `traefik.enable=true`. Does not require the gateway to be running.
+Columns: SERVICE, URL, PORT, STATUS (from `docker compose ps`), HOSTS (`yes`/`no` for `.localhost`).
 
 **Setup:** `cd cli && npm install && npm link`
 

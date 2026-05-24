@@ -1,6 +1,6 @@
 import { Command } from 'commander';
 import { execFileSync } from 'child_process';
-import { homedir } from 'os';
+import { abbreviatePath } from '../utils/paths.js';
 
 function extractDomain(rule) {
   const match = rule.match(/Host\(`([^`]+)`\)/);
@@ -12,10 +12,6 @@ function buildUrl(rule, entryPoints) {
   return `${scheme}://${extractDomain(rule)}`;
 }
 
-function abbreviatePath(p) {
-  const home = homedir();
-  return p.startsWith(home) ? `~${p.slice(home.length)}` : p;
-}
 
 function getComposePaths(routerNames) {
   try {
@@ -53,7 +49,8 @@ function getComposePaths(routerNames) {
       }
     }
     return paths;
-  } catch {
+  } catch (err) {
+    if (process.env.DEBUG === '1') console.error(`[debug] docker inspect failed: ${err instanceof Error ? err.stack : String(err)}`);
     return {};
   }
 }

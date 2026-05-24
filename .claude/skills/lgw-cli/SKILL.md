@@ -15,6 +15,7 @@ description: >
 | `cli/bin/lgw.js`              | Entry point — registers all commands via Commander    |
 | `cli/src/commands/add.js`     | `lgw add` — patches docker-compose.yml, handles hosts |
 | `cli/src/commands/list.js`    | `lgw list` — queries Traefik API + Docker inspect     |
+| `cli/src/commands/info.js`    | `lgw info` — reads local compose, shows routing details |
 | `cli/src/utils/compose.js`    | YAML read/write helpers for docker-compose files      |
 | `cli/src/utils/hosts.js`      | `/etc/hosts` matching, validation, and writing        |
 | `cli/test/compose.test.js`    | Unit tests for YAML mutation logic                    |
@@ -131,6 +132,61 @@ Traefik dashboard router.
 
 `com.docker.compose.project.config_files` is a comma-separated list of absolute paths.
 Take the first one and abbreviate `$HOME` to `~`.
+
+---
+
+## lgw info — Key Invariants
+
+### Data source
+
+Reads `docker-compose.yml` from CWD — does **not** query the Traefik API. Works offline.
+
+### Label extraction
+
+Labels can be seq or map. `extractLabels(doc, service)` normalises both into a plain
+`{ key: value }` object — seq items are split on first `=`, map values are stringified.
+This is a local utility, not exported from `compose.js`, because it is read-only and
+info-specific (no mutation needed).
+
+### Traefik detection
+
+A service is "routed" if `traefik.enable === 'true'` (string) or `=== true` (boolean).
+
+`extractTraefikInfo(labels)` resolves domain and port in two steps:
+
+1. **Router scan** — iterate labels, find the first key matching
+   `traefik.http.routers.<routerName>.rule` whose value contains `Host(...)`;
+   capture `routerName` and `domain`.
+
+2. **Port resolution** — check for a `traefik.http.routers.<routerName>.service` override
+   label; use its value as `serviceName`, otherwise default `serviceName = routerName`.
+   Look up `traefik.http.services.<serviceName>.loadbalancer.server.port` directly.
+   If not present, port shows `—`. **There is no fallback to unrelated service ports** —
+   an incorrect pairing is worse than a missing value.
+
+Router names in labels do not have to match the service name — the regex scan handles any
+router name, and the `.service` override label handles explicit router→service mappings.
+
+### URL scheme
+
+Always `http://` — the local compose file has no reliable entrypoints label added by
+`lgw add`, so the scheme cannot be inferred. For the live scheme, use `lgw list`.
+
+### Running status
+
+`docker compose ps --format '{{.Service}}\t{{.State}}'` run in CWD. If Docker is
+unavailable or the project has no running containers, status shows `stopped` per service
+(or `unknown` if the call itself fails). Never crash on a missing Docker.
+
+### Hosts column
+
+Only meaningful for `.localhost` domains. Calls `hasHost(domain)` (wraps
+`readFileSync('/etc/hosts')`). Non-`.localhost` domains show `—`.
+
+### Output when no routed services
+
+Print a message suggesting `lgw add` and list all services. Do not exit with a non-zero
+code — the compose file is valid, just not yet wired.
 
 ---
 
