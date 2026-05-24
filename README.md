@@ -136,6 +136,7 @@ no flags needed when running `just up`.
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [just](https://github.com/casey/just) — command runner (`brew install just` on macOS)
+- [Node.js](https://nodejs.org/) >= 20 — required for the `lgw` CLI (dev workstation only)
 
 ---
 
@@ -162,7 +163,15 @@ This creates `.env`, sets `COMPOSE_FILE`, creates the Docker network, and (dev o
 
 Review `.env` — the defaults are ready for a dev workstation. Adjust ports or dashboard settings as needed.
 
-### 3. Start the Gateway
+### 3. Install the CLI *(dev only)*
+
+```bash
+just cli-setup
+```
+
+This installs dependencies and links `lgw` globally so you can run it from any project.
+
+### 4. Start the Gateway
 
 ```bash
 just up
@@ -170,7 +179,7 @@ just up
 
 Run `just` to see all available commands.
 
-### 4. Access the Dashboard *(dev only)*
+### 5. Access the Dashboard *(dev only)*
 
 | Service                        | URL                                                              |
 |--------------------------------|------------------------------------------------------------------|
@@ -181,26 +190,42 @@ Run `just` to see all available commands.
 
 ## Connecting a Project
 
-Add the `local_gateway` network and a few Traefik labels to any service in your project's `docker-compose.yml`:
+From inside any project directory, run:
 
-```yaml
-services:
-  app:
-    image: my-app
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.myapp.rule=Host(`myapp.localhost`)"
-      - "traefik.http.services.myapp.loadbalancer.server.port=80"
-      - "traefik.docker.network=local_gateway"
-    networks:
-      - local_gateway
-
-networks:
-  local_gateway:
-    external: true
+```bash
+lgw add
 ```
 
-That's it. No reverse proxy config. No port juggling. No DNS headaches.
+`lgw` will prompt you for the service, domain, and port, patch your `docker-compose.yml`, and register the domain
+in `/etc/hosts` — all in one step. After the prompts it prints the equivalent one-liner for CI/CD or scripting:
+
+```bash
+lgw add --service app --domain myapp.localhost --port 3000
+```
+
+To see all routes currently active in Traefik:
+
+```bash
+lgw list
+```
+
+> **Without the CLI** — add the labels and network entry manually to your `docker-compose.yml`:
+>
+> ```yaml
+> services:
+>   app:
+>     labels:
+>       - "traefik.enable=true"
+>       - "traefik.http.routers.myapp.rule=Host(`myapp.localhost`)"
+>       - "traefik.http.services.myapp.loadbalancer.server.port=3000"
+>       - "traefik.docker.network=local_gateway"
+>     networks:
+>       - local_gateway
+>
+> networks:
+>   local_gateway:
+>     external: true
+> ```
 
 ---
 

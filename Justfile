@@ -54,6 +54,10 @@ add-host domain:
         echo "'${DOMAIN}' added to /etc/hosts"
     fi
 
+# Install and link the lgw CLI (requires Node.js >= 20)
+cli-setup:
+    cd cli && npm install && npm link
+
 # Start all services
 up:
     docker compose up -d

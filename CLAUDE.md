@@ -5,6 +5,7 @@
 - **Traefik v3** — central reverse proxy for dev workstations and remote servers
 - **Docker Compose** — orchestration with environment-specific file merging via `COMPOSE_FILE`
 - **just** — command runner (`Justfile` at the root)
+- **lgw** — Node.js CLI (`cli/`) for connecting secondary projects to the gateway
 
 ---
 
@@ -91,6 +92,28 @@ just          # List all available commands with their descriptions
 - This applies equally to changes made by Claude and by the developer manually
 - When a developer makes a manual change, they can ask Claude Code to update the docs accordingly
 - **PR reviews (including AI tools) must block any PR that modifies code without updating the docs**
+
+---
+
+## CLI — lgw
+
+The `lgw` binary lives in `cli/`. It is a Node.js ESM project (Node >=20).
+
+| File                          | Role                                      |
+|-------------------------------|-------------------------------------------|
+| `cli/bin/lgw.js`              | Entry point — registers all commands      |
+| `cli/src/commands/add.js`     | `lgw add` — patches a project's compose   |
+| `cli/src/commands/list.js`    | `lgw list` — shows active Traefik routes  |
+| `cli/src/utils/compose.js`    | YAML read/write helpers                   |
+| `cli/src/utils/hosts.js`      | `/etc/hosts` idempotent entry helper      |
+
+**`lgw add`** — interactive when run in a terminal, flag-only when no TTY (CI/CD safe).
+After interactive prompts it prints the equivalent non-interactive command.
+
+**`lgw list`** — queries the Traefik API (default: `http://127.0.0.1:8000`).
+Respects `TRAEFIK_PORT_DASHBOARD` env var. Only works when the gateway is running.
+
+**Setup:** `cd cli && npm install && npm link`
 
 ---
 
