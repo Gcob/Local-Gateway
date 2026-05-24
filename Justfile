@@ -11,13 +11,11 @@ init:
     else
         echo ".env already exists, skipping"
     fi
-    NETWORK=$(grep -E '^DOCKER_NETWORK=' .env 2>/dev/null | cut -d= -f2)
-    NETWORK="${NETWORK:-local_gateway}"
-    if docker network inspect "$NETWORK" > /dev/null 2>&1; then
-        echo "Network '$NETWORK' already exists, skipping"
+    if docker network inspect "local_gateway" > /dev/null 2>&1; then
+        echo "Network 'local_gateway' already exists, skipping"
     else
-        docker network create "$NETWORK"
-        echo "Network '$NETWORK' created"
+        docker network create "local_gateway"
+        echo "Network 'local_gateway' created"
     fi
 
 # Start all services
