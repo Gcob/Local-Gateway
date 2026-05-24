@@ -1,14 +1,92 @@
-# Local Gateway — Traefik
+# Gateway — Traefik for Every Project, Every Environment
 
-This lightweight **Docker setup** uses **Traefik** as a central reverse proxy for all your local projects.
+Ever wished you could spin up a new web project and have routing, SSL, and networking just *work* — whether on your
+laptop or a production server — without touching Nginx configs, fighting SSL certificates, or wrestling with Docker
+networking every single time?
+
+That's what this project is.
 
 ---
 
-## Quick Overview
+## What Is This?
 
-- **HTTP Access:** Port `80`
-- **Dashboard:** Port `8080` — [http://localhost:8080](http://localhost:8080)
-- **Shared Network:** `webproxy` connects Traefik to all your local projects
+This is a **meta project** — a shared infrastructure layer that sits alongside all your web projects and handles
+everything network-related so you don't have to.
+
+It wraps **Traefik** into a single, reusable setup that works in two contexts:
+
+| Context               | What it means                                                                             |
+|-----------------------|-------------------------------------------------------------------------------------------|
+| **Local development** | Your dev machine. Multiple projects, clean `*.localhost` URLs, zero config friction.      |
+| **Server deployment** | A real server (staging, production). Same setup, real domains, real SSL, proper security. |
+
+The name says "Local" but the scope is both. The `.env` file is what tells the stack which context it's running in — and
+that matters a lot, because SSL handling, security headers, firewall rules, and certificate management all behave
+differently depending on where you are.
+
+---
+
+## The Problem This Solves
+
+Running multiple web projects — whether locally or on a server — means repeating the same painful setup every time:
+
+- Configuring a reverse proxy (Nginx, Caddy, or raw Traefik)
+- Wiring up SSL certificates and renewals
+- Managing Docker networks across projects
+- Dealing with firewall rules and port conflicts
+- Re-learning DevOps details that have nothing to do with your actual app
+
+This project absorbs all of that complexity once, so every new project you connect just needs a few Docker labels to get
+a working URL, HTTPS, and routing — locally or in production.
+
+---
+
+## Roadmap
+
+This project is built in stages. Complexity is added only when it's needed.
+
+### Phase 1 — Local Development *(current)*
+
+- Single developer machine
+- Multiple projects via `*.localhost` URLs
+- Traefik dashboard for visibility
+- No SSL required (HTTP only)
+
+### Phase 2 — Server Deployment *(next)*
+
+- Single server (VPS, dedicated)
+- Real domains with automatic SSL via Let's Encrypt
+- Production-ready security defaults driven by `.env` context
+- Staging and production environments
+
+> **Out of scope for now:** serverless, multi-instance, and horizontally scaled architectures. This project targets the
+> vast majority of projects that run comfortably on a single server. Large-scale deployments introduce enough edge cases
+> that they deserve their own dedicated setup — that's a future chapter.
+
+---
+
+## How It Works
+
+All your projects connect to a single shared Docker network (`webproxy`). Traefik watches that network and automatically
+routes traffic based on labels you add to your services — no central config file to maintain.
+
+```
+[Browser]
+    │
+    ▼
+[Traefik :80 / :443]
+    │
+    ├──▶ project-a.localhost  →  project-a container
+    ├──▶ project-b.localhost  →  project-b container
+    └──▶ project-c.localhost  →  project-c container
+```
+
+---
+
+## Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [just](https://github.com/casey/just) — command runner (`brew install just` on macOS)
 
 ---
 
@@ -17,36 +95,41 @@ This lightweight **Docker setup** uses **Traefik** as a central reverse proxy fo
 ### 1. Create the Shared Network
 
 ```bash
-docker network create webproxy
+just setup
 ```
 
-### 2. Start the Gateway
+### 2. Configure Your Environment
 
 ```bash
-docker compose up -d
+cp .env.example .env
 ```
 
-### 3. Access the Dashboard
+Set `APP_ENV` to `local` or `server` — this controls SSL, security, and certificate handling.
 
-| Service               | URL                                             |
-| --------------------- | ----------------------------------------------- |
-| **Traefik Dashboard** | [http://localhost:8080](http://localhost:8080)  |
+### 3. Start the Gateway
+
+```bash
+just up
+```
+
+Run `just` to see all available commands with their descriptions.
+
+### 4. Access the Dashboard
+
+| Service               | URL                                            |
+|-----------------------|------------------------------------------------|
+| **Traefik Dashboard** | [http://localhost:8080](http://localhost:8080) |
 
 ---
 
-## How to Connect a Project
+## Connecting a Project
 
-To make a new project accessible through Traefik (e.g. `myapp.localhost`):
-
-1. Add the external network `webproxy` to your project's `docker-compose.yml`.
-2. Add **Traefik labels** to your service.
-
-**Example:**
+Add the `webproxy` network and a few Traefik labels to any service in your project's `docker-compose.yml`:
 
 ```yaml
 services:
-  my_application:
-    image: my_custom_image
+  app:
+    image: my-app
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.myapp.rule=Host(`myapp.localhost`)"
@@ -60,20 +143,24 @@ networks:
     external: true
 ```
 
+That's it. No reverse proxy config. No port juggling. No DNS headaches.
+
 ---
 
-## Local Development — Add Domains to Your Hosts File
+## Local Development — Hosts File
 
-Map your custom local domains to `127.0.0.1` in your hosts file:
+For custom `*.localhost` domains to resolve on your machine, map them to `127.0.0.1`.
 
-```
-127.0.0.1   myapp.localhost
-```
-
-### Linux, WSL and macOS
+### Linux, WSL, and macOS
 
 ```bash
 sudo nano /etc/hosts
+```
+
+Add:
+
+```
+127.0.0.1   myapp.localhost
 ```
 
 ### Windows
