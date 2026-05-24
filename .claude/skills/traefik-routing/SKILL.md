@@ -1,31 +1,31 @@
 # Skill — Traefik Routing
 
-> À compléter au fur et à mesure que des patterns de routing et de middleware Traefik sont établis dans ce projet.
+> To be expanded as routing and middleware patterns are established in this project.
 
-## Fichiers clés
+## Key Files
 
-| Fichier                        | Rôle                                      |
-|-------------------------------|-------------------------------------------|
-| `docker-compose.yml`          | Service Traefik + réseau `webproxy`       |
-| `traefik/traefik.yml`         | Config statique (entrypoints, dashboard)  |
-| `traefik/dynamic_conf.yml`    | Config dynamique (middlewares, routes)    |
+| File                        | Role                                          |
+|-----------------------------|-----------------------------------------------|
+| `docker-compose.yml`        | Traefik service + `local_gateway` network     |
+| `traefik/traefik.yml`       | Static config (entrypoints, dashboard)        |
+| `traefik/dynamic_conf.yml`  | Dynamic config (middlewares, routes)          |
 
-## Ajouter une route
+## Adding a Route
 
-Les routes sont définies via des **labels Docker** sur le service cible :
+Routes are defined via **Docker labels** on the target service:
 
 ```yaml
 labels:
   - "traefik.enable=true"
   - "traefik.http.routers.<name>.rule=Host(`<name>.localhost`)"
   - "traefik.http.services.<name>.loadbalancer.server.port=<port>"
-  - "traefik.docker.network=webproxy"
+  - "traefik.docker.network=local_gateway"
 ```
 
-## Ajouter un middleware
+## Adding a Middleware
 
-Les middlewares globaux se définissent dans `traefik/dynamic_conf.yml`.
-Pour appliquer un middleware à un router spécifique, utiliser le label :
+Global middlewares are defined in `traefik/dynamic_conf.yml`.
+To apply a middleware to a specific router, use the label:
 
 ```yaml
 - "traefik.http.routers.<name>.middlewares=<middleware-name>"

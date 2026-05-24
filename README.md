@@ -67,7 +67,7 @@ This project is built in stages. Complexity is added only when it's needed.
 
 ## How It Works
 
-All your projects connect to a single shared Docker network (`webproxy`). Traefik watches that network and automatically
+All your projects connect to a single shared Docker network (`local_gateway`). Traefik watches that network and automatically
 routes traffic based on labels you add to your services — no central config file to maintain.
 
 ```
@@ -92,19 +92,17 @@ routes traffic based on labels you add to your services — no central config fi
 
 ## Quick Start
 
-### 1. Create the Shared Network
+### 1. Initialize
 
 ```bash
-just setup
+just init
 ```
+
+Creates the shared Docker network and copies `.env.example` to `.env`. Safe to run multiple times.
 
 ### 2. Configure Your Environment
 
-```bash
-cp .env.example .env
-```
-
-Set `APP_ENV` to `local` or `server` — this controls SSL, security, and certificate handling.
+Open `.env` and set `APP_ENV` to `local` or `server` — this controls SSL, security, and certificate handling.
 
 ### 3. Start the Gateway
 
@@ -112,7 +110,7 @@ Set `APP_ENV` to `local` or `server` — this controls SSL, security, and certif
 just up
 ```
 
-Run `just` to see all available commands with their descriptions.
+> Run `just` to see all available commands.
 
 ### 4. Access the Dashboard
 
@@ -124,7 +122,7 @@ Run `just` to see all available commands with their descriptions.
 
 ## Connecting a Project
 
-Add the `webproxy` network and a few Traefik labels to any service in your project's `docker-compose.yml`:
+Add the `local_gateway` network and a few Traefik labels to any service in your project's `docker-compose.yml`:
 
 ```yaml
 services:
@@ -134,12 +132,12 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.myapp.rule=Host(`myapp.localhost`)"
       - "traefik.http.services.myapp.loadbalancer.server.port=80"
-      - "traefik.docker.network=webproxy"
+      - "traefik.docker.network=local_gateway"
     networks:
-      - webproxy
+      - local_gateway
 
 networks:
-  webproxy:
+  local_gateway:
     external: true
 ```
 

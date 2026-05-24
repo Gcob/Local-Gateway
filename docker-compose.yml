@@ -1,25 +1,26 @@
-version: '3.8'
-
 services:
   traefik:
-    image: traefik:v3.1
+    image: traefik:v3.7
     container_name: traefik
     restart: always
     command:
-      - "--api.dashboard=true"
+      - "--api.dashboard=${TRAEFIK_DASHBOARD_ENABLED:-true}"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
     ports:
-      - "80:80"
-      - "8080:8080"
+      - "${TRAEFIK_PORT_HTTP:-80}:80"
+      - "${TRAEFIK_PORT_DASHBOARD:-8000}:8080"
+      # Uncomment for server deployment:
+      # - "${TRAEFIK_PORT_HTTPS:-443}:443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml:ro
     networks:
-      - webproxy
+      - ${DOCKER_NETWORK:-local_gateway}
 
 networks:
   webproxy:
     external: true
+    name: ${DOCKER_NETWORK:-local_gateway}
