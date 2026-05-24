@@ -27,13 +27,22 @@ just demo-stop
 
 A bare Nginx container with no routing configuration. Use `lgw add` to wire it up yourself.
 
-1. Navigate to the demo folder:
+`docker-compose.yml` is not committed — it is generated from `docker-compose.example.yml` so that
+running `lgw add` never makes the repository dirty.
+
+1. Initialize the demo (copies the template):
+
+   ```bash
+   just demo-blank-init
+   ```
+
+2. Navigate to the demo folder:
 
    ```bash
    cd demo/nginx-blank
    ```
 
-2. Connect it to the gateway:
+3. Connect it to the gateway:
 
    ```bash
    lgw add
@@ -41,13 +50,13 @@ A bare Nginx container with no routing configuration. Use `lgw add` to wire it u
 
    When prompted: service → `web`, domain → `nginx-blank.localhost`, port → `80`
 
-3. Start the container:
+4. Start the container:
 
    ```bash
    docker compose up -d
    ```
 
-4. Open [http://nginx-blank.localhost](http://nginx-blank.localhost) in your browser.
+5. Open [http://nginx-blank.localhost](http://nginx-blank.localhost) in your browser.
 
 To see all active routes:
 

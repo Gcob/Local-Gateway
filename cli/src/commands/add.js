@@ -3,7 +3,7 @@ import { select, input, confirm } from '@inquirer/prompts';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { readCompose, writeCompose, addTraefikLabels } from '../utils/compose.js';
-import { addHost } from '../utils/hosts.js';
+import { addHost, hasHost } from '../utils/hosts.js';
 
 export const addCommand = new Command('add')
   .description('Add Traefik routing labels to a service in the current project')
@@ -79,15 +79,31 @@ export const addCommand = new Command('add')
     console.log(`Traefik labels added to service '${service}'`);
 
     if (domain.endsWith('.localhost')) {
-      let writeHosts = options.writeHosts ?? false;
-      if (isTTY && !options.writeHosts) {
-        writeHosts = await confirm({
-          message: `Add '${domain}' to /etc/hosts? (sudo required)`,
-          default: true,
-        });
+      let writeHosts;
+      let verifiedNotInHosts = false;
+
+      if (options.writeHosts !== undefined) {
+        writeHosts = options.writeHosts;
+      } else if (isTTY) {
+        let alreadyInHosts = false;
+        try {
+          alreadyInHosts = hasHost(domain);
+          verifiedNotInHosts = !alreadyInHosts;
+        } catch {
+          // /etc/hosts unreadable — treat as not present, addHost will re-check
+        }
+        if (!alreadyInHosts) {
+          writeHosts = await confirm({
+            message: `Add '${domain}' to /etc/hosts? (sudo required)`,
+            default: true,
+          });
+        }
+      } else {
+        writeHosts = false;
       }
+
       if (writeHosts) {
-        addHost(domain);
+        addHost(domain, { skipCheck: verifiedNotInHosts });
       }
     } else {
       console.log(`Note: '${domain}' is not a .localhost domain — configure DNS manually`);

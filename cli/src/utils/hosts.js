@@ -1,16 +1,25 @@
 import { execFileSync } from 'child_process';
 import { readFileSync } from 'fs';
 
-export function addHost(domain) {
+function escapeRegExp(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function hasHost(domain) {
+  const pattern = new RegExp(`(^|\\s)${escapeRegExp(domain)}(\\s|#|$)`, 'm');
+  try {
+    return pattern.test(readFileSync('/etc/hosts', 'utf8'));
+  } catch {
+    return false;
+  }
+}
+
+export function addHost(domain, { skipCheck = false } = {}) {
   if (!/^[A-Za-z0-9.-]+$/.test(domain)) {
     throw new Error(`Invalid domain '${domain}'`);
   }
 
-  const hostsContent = readFileSync('/etc/hosts', 'utf8');
-  const escaped = domain.replace(/\./g, '\\.');
-  const pattern = new RegExp(`(^|\\s)${escaped}(\\s|#|$)`, 'm');
-
-  if (pattern.test(hostsContent)) {
+  if (!skipCheck && hasHost(domain)) {
     console.log(`'${domain}' already in /etc/hosts, skipping`);
     return;
   }

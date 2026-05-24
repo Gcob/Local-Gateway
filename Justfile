@@ -60,6 +60,17 @@ demo-ready:
     docker compose -f demo/nginx-ready/docker-compose.yml up -d
     @echo "Demo running at http://nginx-ready.localhost"
 
+# Initialize the nginx-blank demo (copies the template docker-compose.yml)
+demo-blank-init:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -f demo/nginx-blank/docker-compose.yml ]; then
+        echo "demo/nginx-blank/docker-compose.yml already exists — delete it first to reinitialize"
+        exit 1
+    fi
+    cp demo/nginx-blank/docker-compose.example.yml demo/nginx-blank/docker-compose.yml
+    echo "nginx-blank ready — cd demo/nginx-blank && lgw add"
+
 # Stop all running demos
 demo-stop:
     -docker compose -f demo/nginx-ready/docker-compose.yml down
@@ -67,7 +78,11 @@ demo-stop:
 
 # Install and link the lgw CLI (requires Node.js >= 20)
 cli-setup:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    chmod +x cli/bin/lgw.js
     cd cli && npm install && npm link
+    echo "lgw installed — run 'lgw --help' to get started"
 
 # Start all services
 up:
