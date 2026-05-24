@@ -54,6 +54,17 @@ add-host domain:
         echo "'${DOMAIN}' added to /etc/hosts"
     fi
 
+# Start the pre-configured nginx demo (labels already applied)
+demo-ready:
+    just add-host "nginx-ready.localhost"
+    docker compose -f demo/nginx-ready/docker-compose.yml up -d
+    @echo "Demo running at http://nginx-ready.localhost"
+
+# Stop all running demos
+demo-stop:
+    -docker compose -f demo/nginx-ready/docker-compose.yml down
+    -docker compose -f demo/nginx-blank/docker-compose.yml down
+
 # Install and link the lgw CLI (requires Node.js >= 20)
 cli-setup:
     cd cli && npm install && npm link

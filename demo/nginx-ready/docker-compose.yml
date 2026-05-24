@@ -1,0 +1,16 @@
+services:
+  web:
+    image: nginx:alpine
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx-ready.rule=Host(`nginx-ready.localhost`)"
+      - "traefik.http.services.nginx-ready.loadbalancer.server.port=80"
+      - "traefik.docker.network=local_gateway"
+    networks:
+      - local_gateway
+
+networks:
+  local_gateway:
+    external: true

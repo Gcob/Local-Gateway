@@ -229,6 +229,17 @@ lgw list
 
 ---
 
+## Demos
+
+The `demo/` folder contains ready-to-run examples. See [demo/README.md](demo/README.md) for instructions.
+
+| Demo          | What it shows                                         |
+|---------------|-------------------------------------------------------|
+| `nginx-ready` | Pre-configured container — starts with `just demo-ready` |
+| `nginx-blank` | Bare container — wire it up yourself with `lgw add`   |
+
+---
+
 ## Dev Workstation — Hosts File
 
 Most modern systems (macOS, recent Linux distributions) resolve `*.localhost` to loopback automatically —
