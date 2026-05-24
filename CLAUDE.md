@@ -121,6 +121,12 @@ Respects `TRAEFIK_PORT_DASHBOARD` env var. Only works when the gateway is runnin
 
 ## Skills
 
+When working on the `lgw` CLI (commands, utilities, tests), read:
+
+```text
+.claude/skills/lgw-cli/SKILL.md
+```
+
 When adding a new Traefik route or middleware, read:
 
 ```text
