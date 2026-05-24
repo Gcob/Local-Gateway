@@ -3,6 +3,9 @@
 .env.local
 .env.*.local
 
+# User-defined Compose extensions — never committed
+docker-compose.custom.yml
+
 # IDE
 .idea
 .vscode

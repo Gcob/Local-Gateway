@@ -2,19 +2,56 @@
 
 ## Tech Stack
 
-- **Traefik v3** — central reverse proxy for local projects
-- **Docker Compose** — local orchestration
+- **Traefik v3** — central reverse proxy for dev workstations and remote servers
+- **Docker Compose** — orchestration with environment-specific file merging via `COMPOSE_FILE`
 - **just** — command runner (`Justfile` at the root)
+
+---
+
+## Environments
+
+Two contexts are defined and must be used consistently throughout the project:
+
+| Term       | Meaning                                                                          |
+|------------|----------------------------------------------------------------------------------|
+| **dev**    | Developer workstation — Mac/Linux, `*.localhost`, no SSL, single dev            |
+| **remote** | Internet-facing server — real DNS, mandatory SSL, staging or production         |
 
 ---
 
 ## Project Context
 
-This is a **local development tool**, not an application to deploy.
-Its role: expose local projects via `*.localhost` through a shared Traefik proxy.
+This is an **opinionated meta project** — a shared infrastructure layer for all web projects.
+It is not an application to deploy; it is the gateway that routes traffic to your applications.
+
+The `remote` context is a first-class citizen in every decision — configs exist and are maintained
+in parallel with `dev`. However, the remote setup is not yet battle-tested. Treat it as in-progress:
+it will work in principle but will require adjustments when validated on a real server.
 
 > Claude Code is encouraged for **developing this tool**, but the tool itself is meant
 > to be used directly by the developer — not via Claude Code.
+
+---
+
+## Compose File Architecture
+
+| File                         | Role                                   |
+|------------------------------|----------------------------------------|
+| `docker-compose.yml`         | Base — image, network, Docker socket   |
+| `docker-compose.dev.yml`     | Dev workstation overrides              |
+| `docker-compose.remote.yml`  | Remote server overrides                |
+| `docker-compose.custom.yml`  | User extensions — gitignored           |
+
+`COMPOSE_FILE` in `.env` (set by `just init`) tells Docker Compose which files to merge.
+Never modify the committed Compose files for personal customizations — use `docker-compose.custom.yml`.
+
+## Traefik Config Files
+
+| File                         | Used by                      |
+|------------------------------|------------------------------|
+| `traefik/traefik.dev.yml`    | `docker-compose.dev.yml`     |
+| `traefik/traefik.remote.yml` | `docker-compose.remote.yml`  |
+| `traefik/dynamic_conf.yml`   | Both environments            |
 
 ---
 

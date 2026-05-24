@@ -1,15 +1,30 @@
 default:
     @just --list
 
-# First-time setup: copy .env.example to .env, create the Docker network, and register local-gateway.localhost
-init:
+# Initialize for dev workstation (default) or remote server: just init [dev|remote]
+init env="dev":
     #!/usr/bin/env bash
     set -euo pipefail
+    if [[ "{{env}}" != "dev" && "{{env}}" != "remote" ]]; then
+        echo "Error: unknown environment '{{env}}' — use 'dev' or 'remote'"
+        exit 1
+    fi
+    COMPOSE_FILE_VALUE="docker-compose.yml:docker-compose.{{env}}.yml"
     if [ ! -f .env ]; then
         cp .env.example .env
-        echo ".env created — review it before starting"
+        echo "" >> .env
+        echo "# Compose files — set by just init, do not edit manually" >> .env
+        echo "COMPOSE_FILE=${COMPOSE_FILE_VALUE}" >> .env
+        echo ".env created for '{{env}}' environment"
     else
-        echo ".env already exists, skipping"
+        if grep -qE "^COMPOSE_FILE=" .env; then
+            sed -i.bak "s|^COMPOSE_FILE=.*|COMPOSE_FILE=${COMPOSE_FILE_VALUE}|" .env && rm -f .env.bak
+        else
+            echo "" >> .env
+            echo "# Compose files — set by just init, do not edit manually" >> .env
+            echo "COMPOSE_FILE=${COMPOSE_FILE_VALUE}" >> .env
+        fi
+        echo ".env updated for '{{env}}' environment"
     fi
     if docker network inspect "local_gateway" > /dev/null 2>&1; then
         echo "Network 'local_gateway' already exists, skipping"
@@ -17,7 +32,9 @@ init:
         docker network create "local_gateway"
         echo "Network 'local_gateway' created"
     fi
-    just add-host "local-gateway.localhost"
+    if [[ "{{env}}" == "dev" ]]; then
+        just add-host "local-gateway.localhost"
+    fi
 
 # Add a 127.0.0.1 entry for a domain in /etc/hosts (idempotent)
 add-host domain:
@@ -57,7 +74,7 @@ logs:
 status:
     docker compose ps
 
-# Deletes all containers and volumes, then restarts everything (useful for a clean slate)
+# Tear down all containers and volumes, then start fresh
 reset:
     docker compose down -v
     docker compose up -d

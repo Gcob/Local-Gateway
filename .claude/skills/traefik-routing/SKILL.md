@@ -4,11 +4,14 @@
 
 ## Key Files
 
-| File                        | Role                                          |
-|-----------------------------|-----------------------------------------------|
-| `docker-compose.yml`        | Traefik service + `local_gateway` network     |
-| `traefik/traefik.yml`       | Static config (entrypoints, dashboard)        |
-| `traefik/dynamic_conf.yml`  | Dynamic config (middlewares, routes)          |
+| File                         | Role                                         |
+|------------------------------|----------------------------------------------|
+| `docker-compose.yml`         | Base — image, network, Docker socket         |
+| `docker-compose.dev.yml`     | Dev workstation overrides                    |
+| `docker-compose.remote.yml`  | Remote server overrides                      |
+| `traefik/traefik.dev.yml`    | Static config for dev workstation            |
+| `traefik/traefik.remote.yml` | Static config for remote server              |
+| `traefik/dynamic_conf.yml`   | Dynamic config (middlewares) — both envs     |
 
 ## Adding a Route
 
@@ -45,6 +48,6 @@ Middlewares from the file provider must use the `@file` suffix when referenced i
 
 ## Dashboard Security Strategy
 
-- **Local**: dashboard is trusted and unrestricted — it's your machine
-- **Server**: set `TRAEFIK_DASHBOARD_ENABLED=false` in `.env` — do not expose it publicly;
+- **dev**: enabled in `traefik/traefik.dev.yml` — trusted workstation, no restrictions needed
+- **remote**: not configured in `traefik/traefik.remote.yml` — do not expose it publicly;
   if access is needed, put it behind a VPN or an authenticated reverse proxy

@@ -1,10 +1,11 @@
-api:
-  dashboard: true
-  insecure: true
+log:
+  level: WARN
 
 entryPoints:
   web:
     address: ":80"
+  websecure:
+    address: ":443"
 
 providers:
   docker:

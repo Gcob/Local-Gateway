@@ -1,0 +1,8 @@
+services:
+  traefik:
+    ports:
+      - "${TRAEFIK_PORT_HTTP:-80}:80"
+      - "${TRAEFIK_PORT_HTTPS:-443}:443"
+    volumes:
+      - ./traefik/traefik.remote.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml:ro

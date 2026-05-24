@@ -3,29 +3,10 @@ services:
     image: traefik:v3.7
     container_name: traefik
     restart: always
-    command:
-      - "--api.dashboard=${TRAEFIK_DASHBOARD_ENABLED:-true}"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-    ports:
-      - "${TRAEFIK_PORT_HTTP:-80}:80"
-      # Uncomment for server deployment:
-      # - "${TRAEFIK_PORT_HTTPS:-443}:443"
-      # Dashboard is only accessible on localhost for security reasons.
-      # This will be addressed for distant servers.
-      - "127.0.0.1:${TRAEFIK_PORT_DASHBOARD:-8000}:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-      - ./traefik/dynamic_conf.yml:/etc/traefik/dynamic_conf.yml:ro
     networks:
       - local_gateway
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`local-gateway.localhost`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
-      - "traefik.http.routers.dashboard.entrypoints=web"
-      - "traefik.http.routers.dashboard.service=api@internal"
 
 networks:
   local_gateway:
