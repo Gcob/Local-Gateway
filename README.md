@@ -26,6 +26,15 @@ differently depending on where you are.
 
 ---
 
+## Compatibility
+
+This project targets **macOS** and **Debian-based Linux** (Ubuntu, Debian, etc.).
+
+**Windows users:** use [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) with Ubuntu. Docker Desktop for
+Windows already requires WSL2, so you likely have it set up — just run everything from inside the WSL2 terminal.
+
+---
+
 ## The Problem This Solves
 
 Running multiple web projects — whether locally or on a server — means repeating the same painful setup every time:
@@ -67,10 +76,10 @@ This project is built in stages. Complexity is added only when it's needed.
 
 ## How It Works
 
-All your projects connect to a single shared Docker network (`local_gateway`). Traefik watches that network and automatically
-routes traffic based on labels you add to your services — no central config file to maintain.
+All your projects connect to a single shared Docker network (`local_gateway`). Traefik watches that network and
+automatically routes traffic based on labels you add to your services — no central config file to maintain.
 
-```
+```text
 [Browser]
     │
     ▼
@@ -110,13 +119,14 @@ Open `.env` and set `APP_ENV` to `local` or `server` — this controls SSL, secu
 just up
 ```
 
-> Run `just` to see all available commands.
+Run `just` to see all available commands.
 
 ### 4. Access the Dashboard
 
-| Service               | URL                                            |
-|-----------------------|------------------------------------------------|
-| **Traefik Dashboard** | [http://localhost:8080](http://localhost:8080) |
+| Service                        | URL                                                              |
+|--------------------------------|------------------------------------------------------------------|
+| **Traefik Dashboard**          | [http://local-gateway.localhost](http://local-gateway.localhost) |
+| **Traefik Dashboard (direct)** | [http://localhost:8000](http://localhost:8000)                   |
 
 ---
 
@@ -147,24 +157,16 @@ That's it. No reverse proxy config. No port juggling. No DNS headaches.
 
 ## Local Development — Hosts File
 
-For custom `*.localhost` domains to resolve on your machine, map them to `127.0.0.1`.
+Most modern systems (macOS, recent Linux distributions) resolve `*.localhost` to loopback automatically —
+no hosts file entry needed. `just init` adds `local-gateway.localhost` as a best-effort helper, but it
+is not strictly required if your system already handles `.localhost` resolution.
 
-### Linux, WSL, and macOS
+If a domain does not resolve, add it manually:
 
 ```bash
 sudo nano /etc/hosts
 ```
 
-Add:
-
-```
-127.0.0.1   myapp.localhost
-```
-
-### Windows
-
-Edit `C:\Windows\System32\drivers\etc\hosts` as Administrator, then flush DNS:
-
-```powershell
-ipconfig /flushdns
+```text
+127.0.0.1   myapp.localhost # managed by local-gateway
 ```

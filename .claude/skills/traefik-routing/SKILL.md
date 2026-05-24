@@ -30,3 +30,21 @@ To apply a middleware to a specific router, use the label:
 ```yaml
 - "traefik.http.routers.<name>.middlewares=<middleware-name>"
 ```
+
+Middlewares from the file provider must use the `@file` suffix when referenced in Docker labels:
+
+```yaml
+- "traefik.http.routers.<name>.middlewares=<middleware-name>@file"
+```
+
+## Available Middlewares
+
+| Middleware          | Provider | Description                                |
+|---------------------|----------|--------------------------------------------|
+| `redirect-to-https` | `@file`  | Redirects HTTP traffic to HTTPS (Phase 2)  |
+
+## Dashboard Security Strategy
+
+- **Local**: dashboard is trusted and unrestricted — it's your machine
+- **Server**: set `TRAEFIK_DASHBOARD_ENABLED=false` in `.env` — do not expose it publicly;
+  if access is needed, put it behind a VPN or an authenticated reverse proxy
